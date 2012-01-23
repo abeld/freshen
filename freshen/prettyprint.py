@@ -62,7 +62,7 @@ class FreshenPrettyPrint(object):
     
     @classmethod
     def _step(cls, step, color):
-        return "        " + colored('%-40s' % (step.step_type + " " + step.match), color) \
+        return "        " + colored('%-40s' % (step.step_type_native + " " + step.match), color) \
                             + " " +\
                             colored("# " + step.source_location(), COMMENT)
     
