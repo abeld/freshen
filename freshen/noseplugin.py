@@ -242,8 +242,7 @@ class FreshenNosePlugin(Plugin):
             stream.write("You can implement step definitions for the missing steps with these snippets:\n\n")
             uniq_steps = set(s[2].step for s in self.undefined_steps)
             for step in uniq_steps:
-                stream.write('@%s(r"^%s$")\n' % (self.language.words(step.step_type)[0],
-                                                 step.match))
+                stream.write('@%s(r"^%s$")\n' % (step.step_type.capitalize(), step.match))
                 stream.write('def %s_%s():\n' % (step.step_type,
                                                  re.sub('[^\w]', '_', step.match).lower()))
                 stream.write('    # code here\n\n')
