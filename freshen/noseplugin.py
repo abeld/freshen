@@ -34,16 +34,37 @@ __unittest = 1
 
 
 class FreshenErrorPlugin(ErrorClassPlugin):
-
-    enabled = True
+    
     undefined = ErrorClass(UndefinedStepImpl,
                            label="UNDEFINED",
-                           isfailure=False)
+                           isfailure=False) # Only the default value, this will be modified below, in .configure()
 
     def options(self, parser, env):
-        # Forced to be on!
-        pass
+        # don't call superclass's method, since the only thing that will do is register a --with-... option,
+        # which we don't need since this plugin is always enabled.
+        #super(FreshenErrorPlugin, self).options(parser, env)
 
+        parser.add_option('--undefined-steps-cause-test-failure', action='store_true',
+                          dest='undefined_steps_cause_test_failure',
+                          default=env.get('NOSE_FRESHEN_UNDEFINED_STEPS_CAUSE_TEST_FAILURE') == '1',
+                          help="Treat undefined steps as errors."
+                               "[NOSE_FRESHEN_UNDEFINED_STEPS_CAUSE_TEST_FAILURE]")
+    
+    def configure(self, options, config):
+        super(FreshenErrorPlugin, self).configure(options, config)
+        
+        # Fiddle with errorclass's isfailure attribute to make it into an failure-causing error:
+        if options.undefined_steps_cause_test_failure:
+            self.undefined.is_failure = True
+            # we also have to modify the value stored in
+            # self.errorClasses, which is made of tuples, so have to
+            # unpack and repack it:
+            errorClasses = list(self.errorClasses)
+            errorClasses[0] = (errorClasses[0][0], errorClasses[0][1][:2]+ (True,))
+            self.errorClasses = tuple(errorClasses)
+
+        # this plugin is always enabled. (FIXME: should it be only enabled if Freshen plugin is?)
+        self.enabled=True
 
 class StepsLoadFailure(Failure):
 
